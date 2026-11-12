@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>أبو العز | الخدمات العامة والنقل</title>
+<style>
+:root{--navy:#105784;--blue:#2389b8;--pale:#eaf5fa;--line:#c8dfeb;--ink:#183b52;--muted:#668397}
+*{box-sizing:border-box}body{margin:0;background:#f3f8fb;color:var(--ink);font-family:Tahoma,Arial,sans-serif}
+header{background:linear-gradient(110deg,#fff,#e8f5fb);border-bottom:3px solid #c3e1ef;padding:20px 4%;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{font-weight:bold;color:var(--navy);font-size:18px}.brand small{display:block;color:var(--muted);font-size:12px;margin-top:6px}
+h1{margin:0;color:var(--navy);font-size:24px}.subtitle{font-size:13px;color:var(--muted);margin-top:6px}
+main{max-width:1200px;margin:24px auto;padding:0 16px}
+.hero{background:linear-gradient(115deg,#0d527f,#218bb8);color:white;padding:22px 24px;border-radius:18px;box-shadow:0 7px 18px #164e6b1c}.hero h2{margin:0 0 8px}.hero p{margin:0;line-height:1.8;font-size:14px}
+.tabs{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}.tab{border:1px solid var(--line);background:white;color:var(--navy);padding:12px 18px;border-radius:11px;font-weight:bold;cursor:pointer}.tab.active{background:var(--navy);color:white}
+.panel{display:none;background:white;border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:0 3px 14px #164e6b0c}.panel.active{display:block}
+h3{margin:0 0 16px;color:var(--navy)}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+label{display:block;font-size:13px;font-weight:bold;color:#315b73;margin-bottom:7px}
+input,textarea{width:100%;border:1px solid #bdd7e5;border-radius:9px;padding:11px;font:inherit;color:var(--ink);background:#fff}
+textarea{min-height:90px;resize:vertical}.field{margin-bottom:14px}.full{grid-column:1/-1}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}button.primary{background:var(--navy);color:#fff;border:0;border-radius:9px;padding:12px 20px;font:inherit;cursor:pointer}button.light{background:#e8f3f8;color:var(--navy);border:1px solid var(--line);border-radius:9px;padding:12px 18px;font:inherit;cursor:pointer}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0}.card{background:#f5fafc;border:1px solid var(--line);border-radius:12px;padding:15px}.card strong{display:block;font-size:25px;color:var(--navy);margin-bottom:5px}.card span{font-size:12px;color:var(--muted)}
+.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:10px;margin-top:14px}table{border-collapse:collapse;width:100%;min-width:620px;background:#fff}th,td{text-align:right;padding:11px;border-bottom:1px solid #e4eef3;font-size:13px}th{background:var(--pale);color:var(--navy)}
+.hint{font-size:12px;color:var(--muted);line-height:1.8;margin-top:12px}.status{padding:9px 12px;border-radius:9px;background:#edf8f1;color:#216b45;font-size:13px;margin-top:12px;display:none}
+@media(max-width:700px){.grid,.cards{grid-template-columns:1fr}.full{grid-column:auto}h1{font-size:20px}}
+@media print{header,.tabs,.actions,.hero{display:none!important}body{background:white}.panel{display:block!important;border:0;box-shadow:none;page-break-after:always}main{margin:0;padding:0}}
+</style>
+<style>.system-home-link{position:sticky;top:0;z-index:99999;display:block;width:max-content;max-width:calc(100% - 24px);margin:10px 12px 14px auto;padding:10px 16px;border-radius:10px;background:#14527c;color:#fff!important;text-decoration:none!important;font: bold 14px Tahoma,Arial,sans-serif;box-shadow:0 2px 8px #0002}</style>
+</head>
+<body><a class="system-home-link" href="index.html">العودة إلى لوحة مساعد المدير التنفيذي</a>
+
+<header>
+ <div class="brand">مستشفى الملك فهد بالباحة<small>نظام أبو العز للخدمات الإدارية والتشغيل</small></div>
+ <div><h1>إدارة الخدمات العامة والنقل</h1><div class="subtitle">التسجيل اليومي ومتابعة الملخص الأسبوعي</div></div>
+</header>
+<main>
+<section class="hero"><h2>مرحباً بك في صفحة الخدمات العامة والنقل</h2><p>تُسجّل البيانات يومياً في القسم المختص، ثم تُجمع تلقائياً في ملخص أسبوعي لمراجعة الإدارة.</p></section>
+<nav class="tabs">
+<button class="tab active" data-tab="movement">قسم الحركة</button>
+<button class="tab" data-tab="dialysis">النقل الإسعافي – مواعيد غسيل الكلى</button>
+<button class="tab" data-tab="discharge">النقل الإسعافي – الخروج للمنزل</button>
+<button class="tab" data-tab="weekly">الملخص الأسبوعي</button>
+</nav>
+
+<section id="movement" class="panel active">
+<h3>التسجيل اليومي – قسم الحركة</h3>
+<div class="grid">
+<div class="field"><label>تاريخ التسجيل</label><input type="date" id="mDate"></div>
+<div class="field"><label>اسم الموظف / مسؤول التسجيل</label><input id="mStaff" placeholder="اسم الموظف"></div>
+<div class="field full"><label>ملخص أعمال الحركة لهذا اليوم</label><textarea id="mWork" placeholder="اكتب ملخص الأعمال اليومية"></textarea></div>
+<div class="field full"><label>الإنجازات</label><textarea id="mWins" placeholder="أبرز الإنجازات"></textarea></div>
+<div class="field full"><label>الملاحظات أو المعوقات</label><textarea id="mNotes" placeholder="الملاحظات إن وجدت"></textarea></div>
+</div>
+<div class="actions"><button class="primary" onclick="saveMovement()">حفظ التسجيل اليومي</button><button class="light" onclick="print()">طباعة</button></div><div class="status" id="mStatus"></div>
+</section>
+
+<section id="dialysis" class="panel">
+<h3>التسجيل اليومي – حالات مواعيد غسيل الكلى</h3>
+<div class="grid">
+<div class="field"><label>تاريخ التسجيل</label><input type="date" id="dDate"></div>
+<div class="field"><label>عدد الحالات اليوم</label><input type="number" min="0" step="1" id="dCount" placeholder="0"></div>
+<div class="field"><label>اسم الموظف / مسؤول التسجيل</label><input id="dStaff" placeholder="اسم الموظف"></div>
+<div class="field"><label>ملاحظات (اختياري)</label><input id="dNotes" placeholder="ملاحظات"></div>
+</div>
+<div class="actions"><button class="primary" onclick="saveCount('dialysis')">حفظ العدد اليومي</button><button class="light" onclick="print()">طباعة</button></div><div class="status" id="dStatus"></div>
+</section>
+
+<section id="discharge" class="panel">
+<h3>التسجيل اليومي – حالات الخروج من المستشفى إلى المنزل</h3>
+<div class="grid">
+<div class="field"><label>تاريخ التسجيل</label><input type="date" id="oDate"></div>
+<div class="field"><label>عدد الحالات اليوم</label><input type="number" min="0" step="1" id="oCount" placeholder="0"></div>
+<div class="field"><label>اسم الموظف / مسؤول التسجيل</label><input id="oStaff" placeholder="اسم الموظف"></div>
+<div class="field"><label>ملاحظات (اختياري)</label><input id="oNotes" placeholder="ملاحظات"></div>
+</div>
+<div class="actions"><button class="primary" onclick="saveCount('discharge')">حفظ العدد اليومي</button><button class="light" onclick="print()">طباعة</button></div><div class="status" id="oStatus"></div>
+</section>
+
+<section id="weekly" class="panel">
+<h3>الملخص الأسبوعي</h3>
+<div class="grid">
+<div class="field"><label>من تاريخ</label><input type="date" id="from"></div>
+<div class="field"><label>إلى تاريخ</label><input type="date" id="to"></div>
+</div>
+<div class="actions"><button class="primary" onclick="buildWeekly()">عرض الملخص</button><button class="light" onclick="print()">طباعة التقرير</button></div>
+<div class="cards">
+<div class="card"><strong id="sumD">0</strong><span>إجمالي حالات مواعيد غسيل الكلى</span></div>
+<div class="card"><strong id="sumO">0</strong><span>إجمالي حالات الخروج للمنزل</span></div>
+<div class="card"><strong id="sumAll">0</strong><span>إجمالي النقل الإسعافي</span></div>
+</div>
+<h3>سجلات قسم الحركة</h3><div class="tablewrap"><table><thead><tr><th>التاريخ</th><th>الموظف</th><th>ملخص الأعمال</th><th>الإنجازات</th><th>الملاحظات</th></tr></thead><tbody id="movementRows"></tbody></table></div>
+<h3 style="margin-top:22px">سجلات النقل الإسعافي</h3><div class="tablewrap"><table><thead><tr><th>التاريخ</th><th>نوع الخدمة</th><th>العدد</th><th>الموظف</th><th>ملاحظات</th></tr></thead><tbody id="transportRows"></tbody></table></div>
+<p class="hint">الملخص يجمع الإدخالات اليومية المحفوظة على هذا الجهاز ضمن الفترة المحددة. هذه نسخة تجريبية محلية؛ لم تُربط بعد بقاعدة بيانات مشتركة أو بحسابات المستخدمين أو بالإرسال التلقائي للبريد.</p>
+</section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const today=new Date().toISOString().slice(0,10);
+['mDate','dDate','oDate','to'].forEach(id=>$(id).value=today);
+const weekStart=new Date();weekStart.setDate(weekStart.getDate()-((weekStart.getDay()+6)%7));$('from').value=weekStart.toISOString().slice(0,10);
+let movement=JSON.parse(localStorage.getItem('abu_transport_movement')||'[]');
+let counts=JSON.parse(localStorage.getItem('abu_transport_counts')||'[]');
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab,.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');$(b.dataset.tab).classList.add('active');if(b.dataset.tab==='weekly')buildWeekly()}));
+function notice(id,msg){$(id).textContent=msg;$(id).style.display='block'}
+function saveMovement(){
+ if(!$('mDate').value){alert('اختر تاريخ التسجيل');return}
+ movement.push({date:$('mDate').value,staff:$('mStaff').value,work:$('mWork').value,wins:$('mWins').value,notes:$('mNotes').value});
+ localStorage.setItem('abu_transport_movement',JSON.stringify(movement));notice('mStatus','تم حفظ تسجيل الحركة اليومي على هذا الجهاز.');}
+function saveCount(type){
+ let p=type==='dialysis'?'d':'o',count=Number($(p+'Count').value);
+ if(!$(p+'Date').value||$(p+'Count').value===''||count<0){alert('أدخل التاريخ والعدد بشكل صحيح');return}
+ counts.push({date:$(p+'Date').value,type,count,staff:$(p+'Staff').value,notes:$(p+'Notes').value});
+ localStorage.setItem('abu_transport_counts',JSON.stringify(counts));notice(p+'Status','تم حفظ العدد اليومي على هذا الجهاز.');$(p+'Count').value='';$(p+'Notes').value='';}
+function buildWeekly(){
+ let a=$('from').value,b=$('to').value;
+ let inRange=x=>x>=a&&x<=b;
+ let ms=movement.filter(x=>inRange(x.date)),cs=counts.filter(x=>inRange(x.date));
+ let d=cs.filter(x=>x.type==='dialysis').reduce((s,x)=>s+x.count,0),o=cs.filter(x=>x.type==='discharge').reduce((s,x)=>s+x.count,0);
+ $('sumD').textContent=d;$('sumO').textContent=o;$('sumAll').textContent=d+o;
+ $('movementRows').innerHTML=ms.map(x=>`<tr><td>${x.date}</td><td>${esc(x.staff)}</td><td>${esc(x.work)}</td><td>${esc(x.wins)}</td><td>${esc(x.notes)}</td></tr>`).join('')||'<tr><td colspan="5">لا توجد تسجيلات خلال الفترة</td></tr>';
+ $('transportRows').innerHTML=cs.map(x=>`<tr><td>${x.date}</td><td>${x.type==='dialysis'?'مواعيد غسيل الكلى':'الخروج من المستشفى إلى المنزل'}</td><td>${x.count}</td><td>${esc(x.staff)}</td><td>${esc(x.notes)}</td></tr>`).join('')||'<tr><td colspan="5">لا توجد تسجيلات خلال الفترة</td></tr>';
+}
+function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+</script>
+</body></html>

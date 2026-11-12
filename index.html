@@ -115,8 +115,17 @@
     </button>
       </div></div></div>
 <script>
-function showInfo(name){document.getElementById('modalTitle').textContent=name;document.getElementById('modalText').textContent='سيتم تفعيل هذه الوظيفة بعد اكتمال الربط الآمن بقاعدة البيانات واعتماد صلاحيات المستخدمين.';document.getElementById('modal').classList.add('show')}
-function selectDept(name){showInfo('صفحة الإدارة');document.getElementById('modalText').textContent='تصميم هذه الإدارة معتمد. سيتم فتح صفحتها بعد تفعيل تسجيل الدخول والتحقق من صلاحية رئيس القسم.'}
-function closeModal(){document.getElementById('modal').classList.remove('show')}
+const DEPARTMENT_PAGES = {
+  medical: 'medical.html', finance: 'finance.html', purchasing: 'purchasing.html',
+  switchboard: 'switchboard.html', transport: 'transport.html', housing: 'housing.html',
+  laundry: 'laundry.html', nutrition: 'nutrition.html', safety: 'safety.html', assets: 'assets.html'
+};
+function selectDept(id) {
+  const page = DEPARTMENT_PAGES[id];
+  if (!page) { alert('صفحة الإدارة غير موجودة.'); return; }
+  window.location.href = page;
+}
+function showInfo(name){ alert(name); }
+function closeModal(){ const modal=document.getElementById('modal'); if(modal) modal.classList.remove('show'); }
 </script>
 </body></html>
