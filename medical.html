@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>إدارة التموين الطبي | نظام السجلات اليومية</title>
+<style>
+:root{--blue:#155b91;--light:#eaf4fb;--ink:#183247;--muted:#6b7d8b;--line:#d8e4ec}
+*{box-sizing:border-box}body{margin:0;background:#f3f7fa;color:var(--ink);font-family:Tahoma,Arial,sans-serif}
+header{background:linear-gradient(120deg,#104d7c,#2479b4);color:#fff;padding:26px 5%;box-shadow:0 3px 12px #18324722}
+header small{opacity:.85}header h1{margin:8px 0;font-size:26px}
+main{max-width:1100px;margin:28px auto;padding:0 18px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.badge{background:#e1f0fa;color:#155b91;border-radius:30px;padding:9px 14px;font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card,.panel{background:#fff;border:1px solid var(--line);border-radius:15px;padding:20px;box-shadow:0 5px 18px #1a46600b}
+.card h2{font-size:16px;line-height:1.7;margin:0 0 16px;min-height:54px}
+label{display:block;font-size:13px;color:var(--muted);margin:12px 0 7px}
+input,textarea{width:100%;border:1px solid #cbd9e3;border-radius:9px;padding:11px;font:inherit;background:#fbfdff;color:var(--ink)}
+input:focus,textarea:focus{outline:2px solid #b9dcf3;border-color:#4b91c2}
+textarea{min-height:76px;resize:vertical}
+button{border:0;border-radius:9px;padding:11px 18px;background:var(--blue);color:#fff;font:inherit;cursor:pointer}
+button.secondary{background:#e8f1f7;color:var(--blue)}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.panel{margin-top:20px}.panel h2{margin:0 0 14px;font-size:18px}
+table{width:100%;border-collapse:collapse;min-width:650px}th,td{padding:12px;border-bottom:1px solid var(--line);text-align:right;font-size:13px}th{background:var(--light);color:#155b91}
+.table-wrap{overflow:auto}.empty{text-align:center;color:var(--muted);padding:22px}
+.note{font-size:12px;color:var(--muted);margin-top:12px}
+@media(max-width:800px){.grid{grid-template-columns:1fr}.card h2{min-height:0}}
+@media print{body{background:#fff}.actions,button{display:none!important}.card,.panel{box-shadow:none;break-inside:avoid}}
+</style>
+<style>.system-home-link{position:sticky;top:0;z-index:99999;display:block;width:max-content;max-width:calc(100% - 24px);margin:10px 12px 14px auto;padding:10px 16px;border-radius:10px;background:#14527c;color:#fff!important;text-decoration:none!important;font: bold 14px Tahoma,Arial,sans-serif;box-shadow:0 2px 8px #0002}</style>
+</head>
+<body><a class="system-home-link" href="index.html">العودة إلى لوحة مساعد المدير التنفيذي</a>
+
+<header>
+  <small>مستشفى الملك فهد بالباحة · الخدمات الإدارية والتشغيل</small>
+  <h1>إدارة التموين الطبي</h1>
+  <div>نموذج التسجيل اليومي ومتابعة المؤشرات</div>
+</header>
+<main>
+  <div class="top">
+    <div class="badge">نظام السجلات اليومية</div>
+    <label style="margin:0">تاريخ التسجيل <input id="date" type="date" style="display:inline-block;width:auto;margin-right:8px"></label>
+  </div>
+  <section class="grid">
+    <article class="card">
+      <h2>عدد الطلبات المرفوضة</h2>
+      <label for="rejected">العدد</label><input id="rejected" type="number" min="0" step="1" placeholder="أدخل العدد">
+      <label for="rejectedNote">ملاحظات</label><textarea id="rejectedNote" placeholder="أضف الملاحظات إن وجدت"></textarea>
+    </article>
+    <article class="card">
+      <h2>عدد الطلبات المستلمة</h2>
+      <label for="received">العدد</label><input id="received" type="number" min="0" step="1" placeholder="أدخل العدد">
+      <label for="receivedNote">ملاحظات</label><textarea id="receivedNote" placeholder="أضف الملاحظات إن وجدت"></textarea>
+    </article>
+    <article class="card">
+      <h2>عدد طلبات الشراء المرفوعة عبر نظام موارد</h2>
+      <label for="mawared">العدد</label><input id="mawared" type="number" min="0" step="1" placeholder="أدخل العدد">
+      <label for="mawaredNote">ملاحظات</label><textarea id="mawaredNote" placeholder="أضف الملاحظات إن وجدت"></textarea>
+    </article>
+  </section>
+  <div class="actions">
+    <button onclick="saveRecord()">حفظ التسجيل اليومي</button>
+    <button class="secondary" onclick="window.print()">طباعة التقرير</button>
+    <button class="secondary" onclick="exportCSV()">تصدير السجلات CSV</button>
+  </div>
+  <section class="panel">
+    <h2>سجل التموين الطبي</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>التاريخ</th><th>الطلبات المرفوضة</th><th>ملاحظاتها</th><th>الطلبات المستلمة</th><th>ملاحظاتها</th><th>طلبات موارد</th><th>ملاحظاتها</th></tr></thead>
+        <tbody id="records"><tr><td colspan="7" class="empty">لا توجد سجلات محفوظة حتى الآن</td></tr></tbody>
+      </table>
+    </div>
+    <p class="note">تنبيه: هذه نسخة معاينة تحفظ البيانات في المتصفح على هذا الجهاز فقط، ولا تزال غير مرتبطة بقاعدة بيانات مركزية أو بحسابات المستخدمين.</p>
+  </section>
+</main>
+<script>
+const fields=['rejected','received','mawared'];
+const keys=['rejectedNote','receivedNote','mawaredNote'];
+const storageKey='abuAlizz_medicalSupply_records';
+document.getElementById('date').value=new Date().toISOString().slice(0,10);
+function getRecords(){try{return JSON.parse(localStorage.getItem(storageKey)||'[]')}catch(e){return []}}
+function saveRecord(){
+ const date=document.getElementById('date').value;
+ if(!date){alert('يرجى اختيار التاريخ');return}
+ const rec={date};
+ for(const f of fields){const v=document.getElementById(f).value;if(v===''||Number(v)<0||!Number.isInteger(Number(v))){alert('يرجى إدخال عدد صحيح غير سالب في جميع المؤشرات');return}rec[f]=Number(v)}
+ for(const k of keys)rec[k]=document.getElementById(k).value.trim();
+ let rows=getRecords();const i=rows.findIndex(x=>x.date===date);
+ if(i>=0){if(!confirm('يوجد تسجيل لهذا التاريخ. هل تريد استبداله؟'))return;rows[i]=rec}else rows.push(rec);
+ rows.sort((a,b)=>b.date.localeCompare(a.date));localStorage.setItem(storageKey,JSON.stringify(rows));render();alert('تم حفظ التسجيل على هذا الجهاز');
+}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function render(){
+ const rows=getRecords(),body=document.getElementById('records');
+ if(!rows.length){body.innerHTML='<tr><td colspan="7" class="empty">لا توجد سجلات محفوظة حتى الآن</td></tr>';return}
+ body.innerHTML=rows.map(r=>`<tr><td>${esc(r.date)}</td><td>${r.rejected}</td><td>${esc(r.rejectedNote)}</td><td>${r.received}</td><td>${esc(r.receivedNote)}</td><td>${r.mawared}</td><td>${esc(r.mawaredNote)}</td></tr>`).join('');
+}
+function exportCSV(){
+ const rows=getRecords();if(!rows.length){alert('لا توجد سجلات للتصدير');return}
+ const cols=['date','rejected','rejectedNote','received','receivedNote','mawared','mawaredNote'];
+ const labels=['التاريخ','الطلبات المرفوضة','ملاحظات المرفوضة','الطلبات المستلمة','ملاحظات المستلمة','طلبات الشراء عبر موارد','ملاحظات موارد'];
+ const csv=[labels,...rows.map(r=>cols.map(k=>r[k]??''))].map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');
+ const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='سجل_التموين_الطبي.csv';a.click();URL.revokeObjectURL(url);
+}
+render();
+</script>
+</body></html>

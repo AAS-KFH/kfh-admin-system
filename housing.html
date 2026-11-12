@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>إدارة الإسكان | نظام السجلات اليومية</title>
+<style>
+:root{--blue:#12649a;--navy:#123b5a;--pale:#eaf4fa;--line:#d8e4ec}
+*{box-sizing:border-box}body{margin:0;background:#f3f7fa;color:#203746;font-family:Tahoma,Arial,sans-serif}
+header{background:linear-gradient(120deg,#123b5a,#1676aa);color:white;padding:25px 18px;text-align:center}
+header h1{margin:0 0 8px;font-size:25px}header p{margin:0;opacity:.9}
+main{max-width:1100px;margin:24px auto;padding:0 14px}
+.card{background:white;border:1px solid var(--line);border-radius:15px;padding:20px;margin-bottom:18px;box-shadow:0 4px 16px #163c5510}
+h2{font-size:19px;color:var(--navy);margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+label{display:block;font-size:13px;color:#526a79;margin-bottom:6px}
+input{width:100%;padding:11px;border:1px solid #cbd9e2;border-radius:9px;font:inherit}
+table{width:100%;border-collapse:collapse;min-width:690px}th,td{border:1px solid var(--line);padding:10px;text-align:center}th{background:var(--pale);color:var(--navy)}td input{min-width:75px;text-align:center}
+.tablewrap{overflow:auto}.pct{font-weight:bold;color:#12649a;font-size:17px}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.stat{background:var(--pale);padding:15px;border-radius:12px;text-align:center}.stat b{display:block;font-size:24px;color:var(--navy);margin-top:7px}
+button{border:0;border-radius:9px;padding:11px 16px;font:inherit;cursor:pointer;background:var(--blue);color:white;margin:5px 3px}
+button.secondary{background:#e7eef3;color:#23465c}button.danger{background:#a33d3d}
+.actions{margin-top:14px}.note{font-size:12px;color:#6c7f8c;margin-top:10px}
+@media print{body{background:white}header{background:white;color:#123b5a;border-bottom:2px solid #123b5a}.card{box-shadow:none;break-inside:avoid}button{display:none}input{border:0;padding:2px}}
+</style><style>.system-home-link{position:sticky;top:0;z-index:99999;display:block;width:max-content;max-width:calc(100% - 24px);margin:10px 12px 14px auto;padding:10px 16px;border-radius:10px;background:#14527c;color:#fff!important;text-decoration:none!important;font: bold 14px Tahoma,Arial,sans-serif;box-shadow:0 2px 8px #0002}</style>
+</head>
+<body><a class="system-home-link" href="index.html">العودة إلى لوحة مساعد المدير التنفيذي</a>
+
+<header><h1>إدارة الإسكان</h1><p>نظام السجلات اليومية – مستشفى الملك فهد بالباحة</p></header>
+<main>
+<section class="card">
+<h2>بيانات تقرير الإشغال</h2>
+<div class="grid">
+<div><label>الفترة / الشهر</label><input id="period" placeholder="مثال: نوفمبر 2026"></div>
+<div><label>تاريخ التحديث</label><input id="date" type="date"></div>
+<div><label>ملاحظات عامة</label><input id="notes" placeholder="ملاحظات اختيارية"></div>
+</div></section>
+<section class="card">
+<h2>جدول نسبة الإشغال</h2>
+<div class="tablewrap"><table id="occupancy">
+<thead><tr><th>المبنى / القسم</th><th>إجمالي الوحدات</th><th>الوحدات المشغولة</th><th>الوحدات الشاغرة</th><th>نسبة الإشغال</th><th>إجراء</th></tr></thead>
+<tbody>
+<tr><td><input placeholder="اسم المبنى أو القسم"></td><td><input type="number" min="0" value="0" oninput="calc()"></td><td><input type="number" min="0" value="0" oninput="calc()"></td><td class="vacant">0</td><td class="pct">64%</td><td><button class="danger" onclick="removeRow(this)">حذف</button></td></tr>
+</tbody></table></div>
+<div class="actions"><button onclick="addRow()">+ إضافة مبنى / قسم</button><button class="secondary" onclick="window.print()">طباعة / حفظ PDF</button></div>
+<p class="note">نسبة الإشغال المعتمدة ثابتة وتظهر تلقائياً: 64%.</p>
+</section>
+<section class="card"><h2>المؤشرات الإجمالية</h2><div class="stats">
+<div class="stat">إجمالي الوحدات<b id="total">0</b></div>
+<div class="stat">الوحدات المشغولة<b id="occupied">0</b></div>
+<div class="stat">الوحدات الشاغرة<b id="empty">0</b></div>
+<div class="stat">نسبة الإشغال العامة<b id="overall">64%</b></div>
+</div></section>
+</main>
+<script>
+document.getElementById('date').value=new Date().toISOString().slice(0,10);
+function rows(){return [...document.querySelectorAll('#occupancy tbody tr')]}
+function calc(){let t=0,o=0;rows().forEach(r=>{let ins=r.querySelectorAll('input[type=number]'),a=Math.max(0,+ins[0].value||0),b=Math.max(0,+ins[1].value||0);b=Math.min(b,a);ins[1].value=b;r.querySelector('.vacant').textContent=a-b;t+=a;o+=b});document.getElementById('total').textContent=t;document.getElementById('occupied').textContent=o;document.getElementById('empty').textContent=t-o;document.getElementById('overall').textContent='64%'}
+function addRow(){let r=document.createElement('tr');r.innerHTML='<td><input placeholder="اسم المبنى أو القسم"></td><td><input type="number" min="0" value="0" oninput="calc()"></td><td><input type="number" min="0" value="0" oninput="calc()"></td><td class="vacant">0</td><td class="pct">64%</td><td><button class="danger" onclick="removeRow(this)">حذف</button></td>';document.querySelector('#occupancy tbody').appendChild(r);calc()}
+function removeRow(b){if(rows().length>1)b.closest('tr').remove();calc()}calc();
+</script></body></html>
