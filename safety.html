@@ -15,4 +15,61 @@ document.getElementById('date').value=new Date().toISOString().slice(0,10);
 function payload(){return {period:period.value,date:date.value,general:general.value,rows:categories.map((c,i)=>({category:c,value:document.getElementById('v'+i).value,note:document.getElementById('n'+i).value}))}}
 function save(){const p=payload();const a=JSON.parse(localStorage.getItem('abuAlizzSafetyReports')||'[]');a.push({...p,id:Date.now()});localStorage.setItem('abuAlizzSafetyReports',JSON.stringify(a));status.textContent='تم حفظ التقرير على هذا المتصفح.'}
 function clearForm(){if(!confirm('بدء نموذج جديد؟'))return;document.querySelectorAll('input,textarea').forEach(x=>{if(x.id!=='date')x.value=''});date.value=new Date().toISOString().slice(0,10);status.textContent=''}
-</script></body></html>
+</script><script>
+/* KFH Central Sync: append-only sync to Google Sheets */
+(function(){
+ const API="https://script.google.com/macros/s/AKfycbzuhgUcDKRkcRFI5t-AAXBEyWVS2emHF5goxVhKgcB_BpXpFMT5BPBC6I_5Svndw77X/exec";
+ const MAP={
+  'abuAlizz_medicalSupply_records':['التموين الطبي','التسجيل اليومي'],
+  'abuAlizz_finance_records':['الشؤون المالية','التسجيل اليومي'],
+  'abuAlizzSafetyReports':['الأمن والسلامة','تقرير الوقائع والحوادث'],
+  'abu_transport_movement':['الخدمات العامة والنقل','أعمال الحركة'],
+  'abu_transport_counts':['الخدمات العامة والنقل','النقل الإسعافي'],
+  'laundry_daily':['المغسلة','الإنتاج اليومي'],
+  'laundry_machines':['المغسلة','حالة المعدات'],
+  'laundry_work':['المغسلة','الصيانة والأعمال'],
+  'abuAlizz_assets_records':['الاستحقاقات والأصول المحاسبي','التسجيل اليومي']
+ };
+ const seen={};
+ Object.keys(MAP).forEach(k=>{try{seen[k]=JSON.parse(localStorage.getItem(k)||'[]')}catch(e){seen[k]=[]}});
+ const original=Storage.prototype.setItem;
+ function send(dept,type,record){
+  const date=record.date||record.تاريخ||record.periodDate||new Date().toISOString().slice(0,10);
+  fetch(API,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify({department:dept,date:date,recordType:type,data:record})}).catch(err=>console.error('KFH sync error',err));
+ }
+ Storage.prototype.setItem=function(key,value){
+  original.call(this,key,value);
+  if(this!==localStorage||!MAP[key])return;
+  try{
+   const now=JSON.parse(value||'[]'); if(!Array.isArray(now))return;
+   const old=seen[key]||[]; const oldSet=new Set(old.map(x=>JSON.stringify(x)));
+   now.forEach(item=>{const sig=JSON.stringify(item);if(!oldSet.has(sig))send(MAP[key][0],MAP[key][1],item)});
+   seen[key]=now;
+  }catch(e){console.error('KFH sync parse error',e)}
+ };
+ // Report viewer available on every department page.
+ function addReportBox(){
+  if(document.getElementById('kfhWeeklyBox'))return;
+  const box=document.createElement('section');box.id='kfhWeeklyBox';
+  box.style.cssText='margin:18px auto;padding:16px;max-width:1100px;background:#fff;border:1px solid #cbd8e5;border-radius:12px;font-family:Tahoma,Arial;color:#203247;direction:rtl';
+  box.innerHTML='<h3 style="margin:0 0 12px;color:#123b68">التقرير الأسبوعي من قاعدة البيانات المركزية</h3><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end"><label>من تاريخ<br><input id="kfhFrom" type="date"></label><label>إلى تاريخ<br><input id="kfhTo" type="date"></label><button id="kfhGet" type="button" style="padding:9px 16px;background:#123b68;color:white;border:0;border-radius:7px">عرض التقرير</button><button id="kfhPrint" type="button" style="padding:9px 16px;border:0;border-radius:7px">طباعة التقرير</button></div><div id="kfhReportResult" style="margin-top:12px;overflow:auto"></div>';
+  document.body.appendChild(box);
+  const today=new Date(); const start=new Date(today); start.setDate(today.getDate()-((today.getDay()+6)%7));
+  box.querySelector('#kfhFrom').value=start.toISOString().slice(0,10);box.querySelector('#kfhTo').value=today.toISOString().slice(0,10);
+  box.querySelector('#kfhGet').onclick=()=>{
+   const dept=document.body.dataset.kfhDepartment||DEPT;
+   const from=box.querySelector('#kfhFrom').value,to=box.querySelector('#kfhTo').value;
+   if(!from||!to||from>to){alert('حدد فترة صحيحة');return}
+   box.querySelector('#kfhReportResult').textContent='جارٍ تحميل التقرير...';
+   const cb='kfhcb_'+Date.now();window[cb]=data=>{delete window[cb];render(data)};
+   const s=document.createElement('script');s.src=API+'?action=weekly&department='+encodeURIComponent(dept)+'&from='+from+'&to='+to+'&callback='+cb;s.onerror=()=>{box.querySelector('#kfhReportResult').textContent='تعذر تحميل التقرير'};document.body.appendChild(s);
+  };
+  function render(data){const target=box.querySelector('#kfhReportResult');if(!data||!data.ok){target.textContent=data&&data.error||'تعذر جلب التقرير';return}let html='<p>القسم: '+esc(data.department)+' | الفترة: '+data.from+' إلى '+data.to+' | عدد التسجيلات: '+data.totalRecords+'</p>';data.records.forEach((r,i)=>{html+='<details '+(i===0?'open':'')+' style="border:1px solid #d8e3ee;padding:9px;margin:7px 0;border-radius:7px"><summary>'+esc(r.date)+' — '+esc(r.recordType)+'</summary><pre style="white-space:pre-wrap;direction:rtl;font-family:Tahoma">'+esc(JSON.stringify(r.data,null,2))+'</pre></details>'});target.innerHTML=html+(data.records.length?'':'<p>لا توجد تسجيلات خلال هذه الفترة.</p>')}
+  box.querySelector('#kfhPrint').onclick=()=>{const w=window.open('','_blank');w.document.write('<html dir="rtl"><meta charset="utf-8"><title>التقرير الأسبوعي</title><body style="font-family:Tahoma">'+box.querySelector('#kfhReportResult').innerHTML+'</body></html>');w.document.close();w.print()};
+ }
+ function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+ const DEPT=document.title.includes('التموين')?'التموين الطبي':document.title.includes('المالية')?'الشؤون المالية':document.title.includes('المشتريات')?'المشتريات':document.title.includes('السنترال')?'السنترال':document.title.includes('الخدمات العامة')?'الخدمات العامة والنقل':document.title.includes('الإسكان')?'الإسكان':document.title.includes('المغسلة')?'المغسلة':document.title.includes('التغذية')?'التغذية':document.title.includes('الأمن والسلامة')?'الأمن والسلامة':document.title.includes('الاستحقاقات')?'الاستحقاقات والأصول المحاسبي':'';
+ window.addEventListener('DOMContentLoaded',addReportBox);
+})();
+</script>
+</body></html>

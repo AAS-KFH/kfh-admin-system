@@ -27,6 +27,18 @@ input{flex:1;min-width:220px}button{background:var(--deep);color:white;border:0;
 <header><div class="brand">مستشفى الملك فهد بالباحة<small>نظام السجلات اليومية</small></div><div><h1>إدارة المشتريات</h1><div class="sub">سجل البيانات الوارد في ملف الإدارة</div></div></header>
 <main>
 <section class="hero"><h2>سجل الأصول والأجهزة</h2><p>عرض قابل للبحث والتصفية للبيانات الموجودة في ملف المشتريات المرسل، دون إضافة نموذج طلب شراء غير موجود.</p></section>
+
+<section class="panel" id="dailySavePanel" style="margin:18px 0">
+<h2 style="color:var(--deep)">تسجيل أعمال المشتريات اليومي</h2>
+<p class="note">هذا نموذج مستقل لتوثيق أعمال القسم اليومية، ولا يغيّر سجل الأصول والأجهزة المعروض أدناه.</p>
+<div class="toolbar"><label>تاريخ التسجيل <input type="date" id="purDate"></label><label>اسم الموظف / مسؤول التسجيل <input id="purStaff" placeholder="اسم الموظف"></label></div>
+<div class="toolbar"><label>نوع العمل <select id="purType"><option>متابعة طلبات الشراء</option><option>إجراءات المنافسات والترسية</option><option>متابعة أوامر الشراء</option><option>استلام وتوريد</option><option>متابعة الموردين</option><option>متابعة الأصول والأجهزة</option><option>أعمال أخرى</option></select></label><label>الحالة <select id="purStatus"><option>تم</option><option>جارٍ العمل</option><option>يتطلب متابعة</option></select></label><label>العدد (إن وجد) <input type="number" min="0" id="purCount" value="0"></label></div>
+<div class="toolbar"><label style="flex:1">موضوع العمل <input id="purSubject" placeholder="موضوع أو عنوان العمل"></label></div>
+<div class="toolbar"><label style="flex:1">تفاصيل الأعمال المنجزة / الإجراء <textarea id="purDetails" style="width:100%;min-height:90px;padding:11px;border:1px solid #b9d4e4;border-radius:9px;font:inherit"></textarea></label></div>
+<div class="toolbar"><label style="flex:1">الملاحظات والمعوقات والتوصيات <textarea id="purNotes" style="width:100%;min-height:75px;padding:11px;border:1px solid #b9d4e4;border-radius:9px;font:inherit"></textarea></label></div>
+<div class="toolbar"><button type="button" id="purSave">حفظ التسجيل اليومي</button><span id="purMsg" class="note" aria-live="polite"></span></div>
+</section>
+
 <section class="stats">
 <div class="stat"><strong id="total">0</strong><span>عدد السجلات في الملف</span></div>
 <div class="stat"><strong id="active">0</strong><span>سجلات مفعّلة (In Use)</span></div>
@@ -64,4 +76,69 @@ function render(){
 }
 function resetFilters(){$('q').value='';$('cat').value='';render()}
 $('q').addEventListener('input',render);$('cat').addEventListener('change',render);render();
-</script></body></html>
+</script><script>
+/* KFH Central Sync: append-only sync to Google Sheets */
+(function(){
+ const API="https://script.google.com/macros/s/AKfycbzuhgUcDKRkcRFI5t-AAXBEyWVS2emHF5goxVhKgcB_BpXpFMT5BPBC6I_5Svndw77X/exec";
+ const MAP={
+  'abuAlizz_medicalSupply_records':['التموين الطبي','التسجيل اليومي'],
+  'abuAlizz_finance_records':['الشؤون المالية','التسجيل اليومي'],
+  'abuAlizzSafetyReports':['الأمن والسلامة','تقرير الوقائع والحوادث'],
+  'abu_transport_movement':['الخدمات العامة والنقل','أعمال الحركة'],
+  'abu_transport_counts':['الخدمات العامة والنقل','النقل الإسعافي'],
+  'laundry_daily':['المغسلة','الإنتاج اليومي'],
+  'laundry_machines':['المغسلة','حالة المعدات'],
+  'laundry_work':['المغسلة','الصيانة والأعمال'],
+  'abuAlizz_assets_records':['الاستحقاقات والأصول المحاسبي','التسجيل اليومي']
+ };
+ const seen={};
+ Object.keys(MAP).forEach(k=>{try{seen[k]=JSON.parse(localStorage.getItem(k)||'[]')}catch(e){seen[k]=[]}});
+ const original=Storage.prototype.setItem;
+ function send(dept,type,record){
+  const date=record.date||record.تاريخ||record.periodDate||new Date().toISOString().slice(0,10);
+  fetch(API,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify({department:dept,date:date,recordType:type,data:record})}).catch(err=>console.error('KFH sync error',err));
+ }
+ Storage.prototype.setItem=function(key,value){
+  original.call(this,key,value);
+  if(this!==localStorage||!MAP[key])return;
+  try{
+   const now=JSON.parse(value||'[]'); if(!Array.isArray(now))return;
+   const old=seen[key]||[]; const oldSet=new Set(old.map(x=>JSON.stringify(x)));
+   now.forEach(item=>{const sig=JSON.stringify(item);if(!oldSet.has(sig))send(MAP[key][0],MAP[key][1],item)});
+   seen[key]=now;
+  }catch(e){console.error('KFH sync parse error',e)}
+ };
+ // Report viewer available on every department page.
+ function addReportBox(){
+  if(document.getElementById('kfhWeeklyBox'))return;
+  const box=document.createElement('section');box.id='kfhWeeklyBox';
+  box.style.cssText='margin:18px auto;padding:16px;max-width:1100px;background:#fff;border:1px solid #cbd8e5;border-radius:12px;font-family:Tahoma,Arial;color:#203247;direction:rtl';
+  box.innerHTML='<h3 style="margin:0 0 12px;color:#123b68">التقرير الأسبوعي من قاعدة البيانات المركزية</h3><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end"><label>من تاريخ<br><input id="kfhFrom" type="date"></label><label>إلى تاريخ<br><input id="kfhTo" type="date"></label><button id="kfhGet" type="button" style="padding:9px 16px;background:#123b68;color:white;border:0;border-radius:7px">عرض التقرير</button><button id="kfhPrint" type="button" style="padding:9px 16px;border:0;border-radius:7px">طباعة التقرير</button></div><div id="kfhReportResult" style="margin-top:12px;overflow:auto"></div>';
+  document.body.appendChild(box);
+  const today=new Date(); const start=new Date(today); start.setDate(today.getDate()-((today.getDay()+6)%7));
+  box.querySelector('#kfhFrom').value=start.toISOString().slice(0,10);box.querySelector('#kfhTo').value=today.toISOString().slice(0,10);
+  box.querySelector('#kfhGet').onclick=()=>{
+   const dept=document.body.dataset.kfhDepartment||DEPT;
+   const from=box.querySelector('#kfhFrom').value,to=box.querySelector('#kfhTo').value;
+   if(!from||!to||from>to){alert('حدد فترة صحيحة');return}
+   box.querySelector('#kfhReportResult').textContent='جارٍ تحميل التقرير...';
+   const cb='kfhcb_'+Date.now();window[cb]=data=>{delete window[cb];render(data)};
+   const s=document.createElement('script');s.src=API+'?action=weekly&department='+encodeURIComponent(dept)+'&from='+from+'&to='+to+'&callback='+cb;s.onerror=()=>{box.querySelector('#kfhReportResult').textContent='تعذر تحميل التقرير'};document.body.appendChild(s);
+  };
+  function render(data){const target=box.querySelector('#kfhReportResult');if(!data||!data.ok){target.textContent=data&&data.error||'تعذر جلب التقرير';return}let html='<p>القسم: '+esc(data.department)+' | الفترة: '+data.from+' إلى '+data.to+' | عدد التسجيلات: '+data.totalRecords+'</p>';data.records.forEach((r,i)=>{html+='<details '+(i===0?'open':'')+' style="border:1px solid #d8e3ee;padding:9px;margin:7px 0;border-radius:7px"><summary>'+esc(r.date)+' — '+esc(r.recordType)+'</summary><pre style="white-space:pre-wrap;direction:rtl;font-family:Tahoma">'+esc(JSON.stringify(r.data,null,2))+'</pre></details>'});target.innerHTML=html+(data.records.length?'':'<p>لا توجد تسجيلات خلال هذه الفترة.</p>')}
+  box.querySelector('#kfhPrint').onclick=()=>{const w=window.open('','_blank');w.document.write('<html dir="rtl"><meta charset="utf-8"><title>التقرير الأسبوعي</title><body style="font-family:Tahoma">'+box.querySelector('#kfhReportResult').innerHTML+'
+<script>
+(()=>{const API='https://script.google.com/macros/s/AKfycbzuhgUcDKRkcRFI5t-AAXBEyWVS2emHF5goxVhKgcB_BpXpFMT5BPBC6I_5Svndw77X/exec';const $=id=>document.getElementById(id);$('purDate').value=new Date().toLocaleDateString('en-CA');$('purSave').addEventListener('click',()=>{const staff=$('purStaff').value.trim(),subject=$('purSubject').value.trim(),details=$('purDetails').value.trim();if(!staff||!subject||!details){alert('أدخل اسم الموظف وموضوع العمل وتفاصيله قبل الحفظ.');return;}const payload={department:'المشتريات',date:$('purDate').value,recordType:'التسجيل اليومي للمشتريات',data:{date:$('purDate').value,staff:staff,workType:$('purType').value,status:$('purStatus').value,count:Number($('purCount').value||0),subject:subject,details:details,notes:$('purNotes').value}};const msg=$('purMsg');msg.textContent='جارٍ إرسال التسجيل إلى قاعدة البيانات...';fetch(API,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify(payload)}).then(()=>{msg.textContent='تم إرسال طلب الحفظ. لا يمكن تأكيد وصوله من المتصفح في وضع الاتصال الحالي؛ تحقق من ظهور السجل في Google Sheets.';}).catch(()=>{msg.textContent='تعذر إرسال التسجيل. تحقق من الاتصال ثم أعد المحاولة.';});});})();
+</script>
+</body></html>');w.document.close();w.print()};
+ }
+ function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+ const DEPT=document.title.includes('التموين')?'التموين الطبي':document.title.includes('المالية')?'الشؤون المالية':document.title.includes('المشتريات')?'المشتريات':document.title.includes('السنترال')?'السنترال':document.title.includes('الخدمات العامة')?'الخدمات العامة والنقل':document.title.includes('الإسكان')?'الإسكان':document.title.includes('المغسلة')?'المغسلة':document.title.includes('التغذية')?'التغذية':document.title.includes('الأمن والسلامة')?'الأمن والسلامة':document.title.includes('الاستحقاقات')?'الاستحقاقات والأصول المحاسبي':'';
+ window.addEventListener('DOMContentLoaded',addReportBox);
+})();
+</script>
+
+<script>
+(()=>{const API='https://script.google.com/macros/s/AKfycbzuhgUcDKRkcRFI5t-AAXBEyWVS2emHF5goxVhKgcB_BpXpFMT5BPBC6I_5Svndw77X/exec';const $=id=>document.getElementById(id);$('purDate').value=new Date().toLocaleDateString('en-CA');$('purSave').addEventListener('click',()=>{const staff=$('purStaff').value.trim(),subject=$('purSubject').value.trim(),details=$('purDetails').value.trim();if(!staff||!subject||!details){alert('أدخل اسم الموظف وموضوع العمل وتفاصيله قبل الحفظ.');return;}const payload={department:'المشتريات',date:$('purDate').value,recordType:'التسجيل اليومي للمشتريات',data:{date:$('purDate').value,staff:staff,workType:$('purType').value,status:$('purStatus').value,count:Number($('purCount').value||0),subject:subject,details:details,notes:$('purNotes').value}};const msg=$('purMsg');msg.textContent='جارٍ إرسال التسجيل إلى قاعدة البيانات...';fetch(API,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify(payload)}).then(()=>{msg.textContent='تم إرسال طلب الحفظ. لا يمكن تأكيد وصوله من المتصفح في وضع الاتصال الحالي؛ تحقق من ظهور السجل في Google Sheets.';}).catch(()=>{msg.textContent='تعذر إرسال التسجيل. تحقق من الاتصال ثم أعد المحاولة.';});});})();
+</script>
+</body></html>
